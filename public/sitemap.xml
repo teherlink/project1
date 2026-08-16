@@ -1,33 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0">
+  <!-- Homepage -->
   <url>
     <loc>https://tetherlink.io/</loc>
-    <lastmod>2026-08-12</lastmod>
+    <lastmod>2026-08-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://tetherlink.io/tether-usdt-logo.png</image:loc>
+      <image:title>Tether Link USDT Staking Platform</image:title>
+    </image:image>
   </url>
-  <url>
-    <loc>https://tetherlink.io/why-tether</loc>
-    <lastmod>2026-08-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
+
+  <!-- How It Works - High Priority -->
   <url>
     <loc>https://tetherlink.io/how-it-works</loc>
-    <lastmod>2026-08-12</lastmod>
+    <lastmod>2026-08-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://tetherlink.io/tether-usdt-logo.svg</image:loc>
+      <image:title>How USDT Staking Works</image:title>
+    </image:image>
+  </url>
+
+  <!-- Why Tether Link -->
+  <url>
+    <loc>https://tetherlink.io/why-tether-link</loc>
+    <lastmod>2026-08-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://tetherlink.io/tether-usdt-logo.svg</image:loc>
+      <image:title>Why Choose Tether Link for Staking</image:title>
+    </image:image>
   </url>
+
+  <!-- Transparency Page -->
   <url>
     <loc>https://tetherlink.io/transparency</loc>
-    <lastmod>2026-08-12</lastmod>
+    <lastmod>2026-08-16</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
+
+  <!-- Verify Page -->
   <url>
     <loc>https://tetherlink.io/verify</loc>
-    <lastmod>2026-08-12</lastmod>
+    <lastmod>2026-08-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+  </url>
+
+  <!-- Privacy Policy -->
+  <url>
+    <loc>https://tetherlink.io/privacy</loc>
+    <lastmod>2026-08-16</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- Terms of Service -->
+  <url>
+    <loc>https://tetherlink.io/terms</loc>
+    <lastmod>2026-08-16</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
   </url>
 </urlset>

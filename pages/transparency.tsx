@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { query } from '../lib/db';
 import TransparencyRotatingFeed from '../components/TransparencyRotatingFeed';
 import TransparencyVisual from '../components/TransparencyVisual';
+import SEOHead from '../components/SEOHead';
+import { generateArticleSchema, generateBreadcrumbSchema, SITE_URL } from '../lib/seo';
 
 type TransparencyJoin = {
   username: string;
@@ -36,8 +38,27 @@ function getRandomDepositAmount(seed: string) {
 }
 
 export default function TransparencyPage({ recentJoins = [], totalUsers, totalAssets, totalDeposits }: TransparencyProps) {
+  const breadcrumbs = [
+    { name: 'Home', url: SITE_URL },
+    { name: 'Transparency', url: `${SITE_URL}/transparency` },
+  ];
+
+  const schemaArticle = generateArticleSchema({
+    title: 'Platform Transparency & Real-Time Metrics | Tether Link',
+    description: 'View live platform metrics, verified deposits, total assets under management, and real-time USDT staking data.',
+  });
+
+  const schemaBreadcrumb = generateBreadcrumbSchema(breadcrumbs);
+
   return (
     <div className="page-shell">
+      <SEOHead
+        pathName="/transparency"
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@graph': [schemaArticle, schemaBreadcrumb],
+        }}
+      />
       <Header />
 
       <main className="page-content transparency-page-content">

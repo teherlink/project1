@@ -1,9 +1,30 @@
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import SEOHead from '../components/SEOHead';
+import { generateArticleSchema, generateBreadcrumbSchema, SITE_URL } from '../lib/seo';
 
 export default function TermsPage() {
+  const breadcrumbs = [
+    { name: 'Home', url: SITE_URL },
+    { name: 'Terms of Service', url: `${SITE_URL}/terms` },
+  ];
+
+  const schemaArticle = generateArticleSchema({
+    title: 'Terms of Service | Tether Link',
+    description: 'Review the complete terms of service for using Tether Link USDT staking platform, including fees, account rules, and risk disclosure.',
+  });
+
+  const schemaBreadcrumb = generateBreadcrumbSchema(breadcrumbs);
+
   return (
     <div className="page-shell">
+      <SEOHead
+        pathName="/terms"
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@graph': [schemaArticle, schemaBreadcrumb],
+        }}
+      />
       <Header />
 
       <main className="page-content">

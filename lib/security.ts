@@ -3,6 +3,16 @@ import { verifyJwt } from './auth';
 
 const rateLimitStore = new Map<string, number[]>();
 
+// Allowed origins for CORS - includes local dev, production domain, and Vercel deployments
+export const ALLOWED_ORIGINS = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'https://tetherlink.io',
+  'https://www.tetherlink.io',
+  // Allow all Vercel preview/deployment URLs
+  /^https:\/\/.*\.vercel\.app$/,
+];
+
 export function getClientIp(req: Pick<NextApiRequest, 'headers' | 'socket'>) {
   const forwardedFor = req.headers['x-forwarded-for'];
   if (typeof forwardedFor === 'string') {
@@ -65,20 +75,27 @@ export function normalizeOrigin(origin?: string | string[] | null) {
   return origin || '';
 }
 
-export function isAllowedOrigin(origin: string | undefined, allowedOrigins: string[]) {
+export function isAllowedOrigin(origin: string | undefined, allowedOrigins: (string | RegExp)[] = ALLOWED_ORIGINS) {
   if (!origin) {
     return true;
   }
 
-  if (allowedOrigins.includes('*')) {
-    return true;
-  }
-
   const normalized = origin.replace(/\/$/, '');
-  if (allowedOrigins.includes(normalized)) {
-    return true;
+
+  // Check exact matches
+  for (const allowed of allowedOrigins) {
+    if (typeof allowed === 'string') {
+      if (allowed === '*' || allowed === normalized) {
+        return true;
+      }
+    } else if (allowed instanceof RegExp) {
+      if (allowed.test(normalized)) {
+        return true;
+      }
+    }
   }
 
+  // Allow localhost patterns
   return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(normalized);
 }
 
@@ -103,25 +120,28 @@ export function validateRequestBodySize(body: unknown, maxBytes = 128000) {
   return Buffer.byteLength(serialized, 'utf8') <= maxBytes;
 }
 
-export function applyCorsHeaders(req: NextApiRequest, res: NextApiResponse, allowedOrigins: string[] = []) {
+export function applyCorsHeaders(req: NextApiRequest, res: NextApiResponse, allowedOrigins?: (string | RegExp)[]) {
   const origin = normalizeOrigin(req.headers.origin);
-  if (!origin && allowedOrigins.length === 0) {
+  const finalAllowedOrigins = allowedOrigins && allowedOrigins.length ? allowedOrigins : ALLOWED_ORIGINS;
+  
+  if (!origin && (!finalAllowedOrigins || finalAllowedOrigins.length === 0)) {
     return true;
   }
 
-  const finalAllowedOrigins = allowedOrigins.length ? allowedOrigins : ['http://localhost:3000'];
   const hasAllowedOrigin = isAllowedOrigin(origin, finalAllowedOrigins);
 
   if (origin && !hasAllowedOrigin) {
     return false;
   }
 
-  const allowedOrigin = origin || finalAllowedOrigins[0];
-  if (origin) {
+  // Set the appropriate origin
+  if (origin && hasAllowedOrigin) {
     res.setHeader('Access-Control-Allow-Origin', origin);
-  } else {
-    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  } else if (finalAllowedOrigins.length > 0) {
+    const firstOrigin = finalAllowedOrigins[0];
+    res.setHeader('Access-Control-Allow-Origin', typeof firstOrigin === 'string' ? firstOrigin : '*');
   }
+  
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-Idempotency-Key');
   res.setHeader('Access-Control-Allow-Credentials', 'true');

@@ -1,9 +1,30 @@
 import Header from '../components/Header';
 import Link from 'next/link';
+import SEOHead from '../components/SEOHead';
+import { generateArticleSchema, generateBreadcrumbSchema, SITE_URL } from '../lib/seo';
 
 export default function WhyTetherLinkPage() {
+  const breadcrumbs = [
+    { name: 'Home', url: SITE_URL },
+    { name: 'Why Tether Link', url: `${SITE_URL}/why-tether-link` },
+  ];
+
+  const schemaArticle = generateArticleSchema({
+    title: 'Why Choose Tether Link | Safe USDT Staking',
+    description: 'Discover why Tether Link is the best platform for USDT staking with professional oversight, transparent 0.5% fees, and experienced team.',
+  });
+
+  const schemaBreadcrumb = generateBreadcrumbSchema(breadcrumbs);
+
   return (
     <div className="page-shell">
+      <SEOHead
+        pathName="/why-tether-link"
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@graph': [schemaArticle, schemaBreadcrumb],
+        }}
+      />
       <Header />
 
       <main className="page-content">

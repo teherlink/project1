@@ -4,10 +4,23 @@ import Link from "next/link";
 import Typewriter from "../components/Typewriter";
 import ProtocolOrbit from "../components/ProtocolOrbit";
 import TransparencyVisual from "../components/TransparencyVisual";
+import SEOHead from "../components/SEOHead";
+import { generateOrganizationSchema, generateWebsiteSchema, SITE_URL } from "../lib/seo";
 
 export default function Home() {
+  const schemaOrg = generateOrganizationSchema();
+  const schemaWeb = generateWebsiteSchema();
+  const combinedSchema = {
+    '@context': 'https://schema.org',
+    '@graph': [schemaOrg, schemaWeb],
+  };
+
   return (
     <div>
+      <SEOHead
+        pathName="/"
+        structuredData={combinedSchema}
+      />
       <Header />
 
       <main>

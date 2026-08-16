@@ -1,4 +1,40 @@
+# Tether Link - SEO Robots Configuration
+
+# Allow all bots to crawl the site
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /app/
+Disallow: /.next/
+Disallow: /public/
+Disallow: /_next/
+Crawl-delay: 1
+Request-rate: 1/1s
 
+# Specific rules for Googlebot
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /app/
+Crawl-delay: 0
+
+# Specific rules for Bingbot
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /app/
+Crawl-delay: 1
+
+# Block bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+# Sitemap locations
 Sitemap: https://tetherlink.io/sitemap.xml
+Sitemap: https://tetherlink.io/api/sitemap.xml

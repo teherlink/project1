@@ -1,8 +1,53 @@
 import Header from '../components/Header';
+import SEOHead from '../components/SEOHead';
+import { generateArticleSchema, generateBreadcrumbSchema, generateFAQSchema, SITE_URL } from '../lib/seo';
 
 export default function HowItWorksPage() {
+  const breadcrumbs = [
+    { name: 'Home', url: SITE_URL },
+    { name: 'How It Works', url: `${SITE_URL}/how-it-works` },
+  ];
+
+  const faqs = [
+    {
+      question: 'How do I start staking USDT on Tether Link?',
+      answer: 'Create an account, verify your email, deposit USDT to your assigned wallet address, choose a fixed APY product, and start earning. It takes just a few minutes.',
+    },
+    {
+      question: 'What is the minimum amount I can stake?',
+      answer: 'The minimum entry is $100 USDT. You can stake any amount above this minimum.',
+    },
+    {
+      question: 'How are rewards calculated?',
+      answer: 'Rewards accrue monthly based on the fixed APY rate of your chosen product. You can view your earnings in real-time on your dashboard.',
+    },
+    {
+      question: 'When can I withdraw my staked USDT?',
+      answer: 'Withdrawal terms depend on your chosen product. Some products have lock periods. Withdrawal rules are clearly shown before you stake.',
+    },
+    {
+      question: 'What fees does Tether Link charge?',
+      answer: 'Tether Link charges a transparent platform fee of 0.5%. All other fees are clearly displayed before you complete any transaction.',
+    },
+  ];
+
+  const schemaArticle = generateArticleSchema({
+    title: 'How USDT Staking Works | Tether Link Guide',
+    description: 'Learn how to stake USDT on Tether Link with our step-by-step guide covering deposits, product selection, earning rewards, and withdrawals.',
+  });
+
+  const schemaBreadcrumb = generateBreadcrumbSchema(breadcrumbs);
+  const schemaFaq = generateFAQSchema(faqs);
+
   return (
     <div className="page-shell">
+      <SEOHead
+        pathName="/how-it-works"
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@graph': [schemaArticle, schemaBreadcrumb, schemaFaq],
+        }}
+      />
       <Header />
 
       <main className="page-content how-page-content">

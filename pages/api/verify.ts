@@ -10,7 +10,7 @@ import {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   applySecurityHeaders(res);
-  const corsAllowed = applyCorsHeaders(req, res, ['http://localhost:3000', 'http://127.0.0.1:3000']);
+  const corsAllowed = applyCorsHeaders(req, res);
   if (!corsAllowed) {
     return res.status(403).json({ error: 'Origin not allowed' });
   }

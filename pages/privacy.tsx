@@ -1,9 +1,30 @@
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import SEOHead from '../components/SEOHead';
+import { generateArticleSchema, generateBreadcrumbSchema, SITE_URL } from '../lib/seo';
 
 export default function PrivacyPage() {
+  const breadcrumbs = [
+    { name: 'Home', url: SITE_URL },
+    { name: 'Privacy Policy', url: `${SITE_URL}/privacy` },
+  ];
+
+  const schemaArticle = generateArticleSchema({
+    title: 'Privacy Policy | Tether Link',
+    description: 'Read our comprehensive privacy policy to understand how Tether Link collects, uses, and protects your personal data.',
+  });
+
+  const schemaBreadcrumb = generateBreadcrumbSchema(breadcrumbs);
+
   return (
     <div className="page-shell">
+      <SEOHead
+        pathName="/privacy"
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@graph': [schemaArticle, schemaBreadcrumb],
+        }}
+      />
       <Header />
 
       <main className="page-content">

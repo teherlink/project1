@@ -1,0 +1,21 @@
+# Example environment variable template for Vercel (DO NOT COMMIT REAL SECRETS)
+# Fill values locally or set directly in Vercel Dashboard / CLI
+
+NEON_DATABASE_URL="postgresql://<user>:<pass>@<host>/<db>?sslmode=require"
+FILEBASE_KEY="<filebase_key>"
+FILEBASE_SECRET="<filebase_secret>"
+FILEBASE_BUCKET="<filebase_bucket>"
+ENCRYPTION_MASTER_KEY="<encryption_master_key>"
+ALCHEMY_POLYGON_AMOY_URL="https://polygon-amoy.g.alchemy.com/v2/<key>"
+NEXTAUTH_URL="https://your-production-domain.com"
+
+SMTP_HOST="smtp.example.com"
+SMTP_PORT=465
+SMTP_USER="smtp_user"
+SMTP_PASS="smtp_password"
+EMAIL_FROM="no-reply@yourdomain.com"
+
+JWT_SECRET="<strong_random_secret_hex>"
+NEXTAUTH_SECRET="<strong_random_secret_hex>"
+
+NODE_ENV=production

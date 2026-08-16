@@ -1503,6 +1503,18 @@ p, ul, ol, li, label, input, button, a{font-family:'Inter', 'Inter UI', ui-sans-
   .cta-actions{flex-direction:column}
   .cta-section{padding:24px 16px}
   .feature-highlights,.faq-section{padding:0 16px}
+  .feature-section{padding:0 16px}
+  .feature-header{margin-bottom:24px}
+  .feature-header h2{font-size:clamp(1.8rem,7vw,2.5rem);line-height:1.14;letter-spacing:-.03em}
+  .feature-header p{font-size:.98rem;line-height:1.7}
+  .feature-grid{grid-template-columns:1fr;gap:14px}
+  .feature-card-large{padding:22px}
+  .feature-card-top{gap:10px}
+}
+
+@media (max-width:480px){
+  .feature-header h2{font-size:clamp(1.6rem,8vw,2.2rem)}
+  .feature-card-large{padding:18px}
 }
 
 .hero-right{display:flex;align-items:center;justify-content:center;position:relative;min-height:340px;pointer-events:none}

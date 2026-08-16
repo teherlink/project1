@@ -68,7 +68,7 @@ export default function AppHome() {
         <div className="login-card">
           <div className="login-brand">
             <Link href="/">
-              <div className="login-logo" aria-label="Tether Link home">
+              <div >
                 <img src="/tether-usdt-logo.svg" alt="Tether Link" />
               </div>
             </Link>

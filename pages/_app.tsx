@@ -12,8 +12,8 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-        <link rel="apple-touch-icon" href="/tether-usdt-logo.png" />
+        <link rel="icon" href="/tether-usdt-logo.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/tether-usdt-logo.png" type="image/png" />
         {/* Mobile viewport optimization */}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         {/* Preload critical resources */}

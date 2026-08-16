@@ -74,8 +74,8 @@ export default function SEOHead({
       )}
 
       {/* Favicon and App Icons */}
-      <link rel="icon" href="/favicon.ico" />
-      <link rel="apple-touch-icon" href="/tether-usdt-logo.png" />
+      <link rel="icon" href="/tether-usdt-logo.png" type="image/png" />
+      <link rel="apple-touch-icon" href="/tether-usdt-logo.png" type="image/png" />
 
       {/* Preload critical resources */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />

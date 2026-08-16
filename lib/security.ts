@@ -9,8 +9,9 @@ export const ALLOWED_ORIGINS = [
   'http://127.0.0.1:3000',
   'https://tetherlink.io',
   'https://www.tetherlink.io',
+  'https://project-two-orpin-77.vercel.app',
   // Allow all Vercel preview/deployment URLs
-  /^https:\/\/.*\.vercel\.app$/,
+  /^https:\/\/([a-z0-9-]+\.)*vercel\.app$/,
 ];
 
 export function getClientIp(req: Pick<NextApiRequest, 'headers' | 'socket'>) {

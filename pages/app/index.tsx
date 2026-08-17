@@ -6,6 +6,7 @@ export default function AppHome() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [referralCode, setReferralCode] = useState('');
   const [token, setToken] = useState('');
   const [message, setMessage] = useState('');
@@ -14,6 +15,11 @@ export default function AppHome() {
   async function handleSignup(event: React.FormEvent) {
     event.preventDefault();
     setMessage('');
+
+    if (password !== confirmPassword) {
+      setMessage('Passwords do not match.');
+      return;
+    }
 
     const response = await fetch('/api/signup', {
       method: 'POST',
@@ -121,6 +127,18 @@ export default function AppHome() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  placeholder="********"
+                  autoComplete="new-password"
+                  required
+                />
+              </label>
+
+              <label className="form-field">
+                <span>Confirm password</span>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="********"
                   autoComplete="new-password"
                   required

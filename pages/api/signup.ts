@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createUser } from '../../lib/auth';
 import { enqueueJob } from '../../lib/job-queue';
+import { sendVerificationEmail } from '../../lib/email';
 import {
   applyCorsHeaders,
   applySecurityHeaders,
@@ -45,13 +46,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const user = await createUser(email.toLowerCase(), username, password, '', referralCode || undefined);
-    await enqueueJob('email.verification', {
-      email: user.email,
-      token: user.verification_token,
-    }, { maxAttempts: 5 });
+
+    try {
+      await sendVerificationEmail(user.email, user.verification_token);
+    } catch (emailError) {
+      console.error('Verification email send failed, falling back to queue:', emailError);
+
+      try {
+        await enqueueJob('email.verification', {
+          email: user.email,
+          token: user.verification_token,
+        }, { maxAttempts: 5 });
+      } catch (queueError) {
+        console.error('Verification email queue fallback failed:', queueError);
+      }
+    }
 
     return res.status(201).json({
-      message: 'Signup successful. Verification email queued. Check your inbox.',
+      message: 'Signup successful. Verification email sent. Check your inbox.',
       user: {
         id: user.id,
         email: user.email,

@@ -22,14 +22,10 @@ export default function Footer() {
             <Link href="/transparency">Transparency</Link>
           </div>
           <div className="footer-col">
-            <h4>Account</h4>
-            <Link href="/app/login">Log in</Link>
-            <Link href="/app">Sign up</Link>
-          </div>
-          <div className="footer-col">
             <h4>Legal</h4>
             <Link href="/terms">Terms</Link>
             <Link href="/privacy">Privacy</Link>
+            <Link href="/risk-statement">Risk Statement</Link>
           </div>
         </div>
       </div>
@@ -39,7 +35,6 @@ export default function Footer() {
         <div className="footer-social">
           <a href="#" aria-label="Twitter">Twitter</a>
           <a href="#" aria-label="Telegram">Telegram</a>
-          <a href="#" aria-label="LinkedIn">LinkedIn</a>
         </div>
       </div>
     </footer>

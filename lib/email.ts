@@ -91,21 +91,61 @@ function wrapHtmlTemplate({ title, heading, body, ctaText, ctaUrl, footerNote }:
 }
 
 export async function sendVerificationEmail(email: string, token: string) {
-  const verifyUrl = `${config.nextAuthUrl}/verify?token=${encodeURIComponent(token)}`;
   const plainText = `Welcome to Tether Link!\n\n` +
-    `Please verify your email by visiting the following link:\n\n` +
-    `${verifyUrl}\n\n` +
-    `If the link does not work, paste this token into the verification page:\n${token}\n\n` +
+    `Your verification token:\n\n` +
+    `${token}\n\n` +
+    `Please enter this token to verify your email address.\n\n` +
     `Thank you!`;
 
-  const html = wrapHtmlTemplate({
-    title: 'Verify your email',
-    heading: 'Verify your email address',
-    body: 'Welcome to Tether Link. Please verify your email address to complete your account setup and start using the platform.',
-    ctaText: 'Verify my email',
-    ctaUrl: verifyUrl,
-    footerNote: 'If you did not create this account, you can safely ignore this email.',
-  });
+  const html = `
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Verify your email</title>
+      </head>
+      <body style="margin:0;padding:0;background:#f3f7f7;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f3f7f7;padding:32px 0;">
+          <tr>
+            <td align="center">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:640px;background:#ffffff;border-radius:18px;overflow:hidden;border:1px solid #dfe9ea;">
+                <tr>
+                  <td style="padding:28px 32px 18px;background:linear-gradient(135deg,#0b7a75,#0ea5a4);color:#ffffff;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                      <tr>
+                        <td style="font-size:28px;font-weight:700;letter-spacing:-0.04em;">Tether Link</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:32px 32px 18px;">
+                    <h1 style="margin:0 0 16px;font-size:28px;line-height:1.2;color:#0f172a;letter-spacing:-0.04em;">Verify your email address</h1>
+                    <p style="margin:0 0 24px;font-size:16px;line-height:1.7;color:#475569;">Welcome to Tether Link. Please use the verification token below to complete your account setup:</p>
+                    
+                    <div style="background:#f8fafc;padding:20px;border-radius:10px;border:2px solid #0ea5a4;margin:24px 0;text-align:center;">
+                      <p style="margin:0 0 8px;font-size:13px;color:#64748b;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;">Your Verification Token</p>
+                      <p style="margin:0;font-size:24px;font-weight:700;color:#0f172a;font-family:monospace;letter-spacing:2px;word-break:break-all;">${token}</p>
+                    </div>
+                    
+                    <p style="margin:0 0 18px;font-size:16px;line-height:1.7;color:#475569;">Then visit the verification page to complete your email verification.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0 32px 28px;">
+                    <div style="border-top:1px solid #e2e8f0;padding-top:16px;">
+                      <p style="margin:0;font-size:14px;line-height:1.7;color:#64748b;">If you did not create this account, you can safely ignore this email.</p>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+  `;
 
   await getTransporter().sendMail({
     from: emailFrom,

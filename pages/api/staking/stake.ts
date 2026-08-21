@@ -73,11 +73,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       const campRes = await client.query(
-        `SELECT id, min_amount, duration_days FROM staking_campaigns WHERE id = $1`,
+        `SELECT id, min_amount, duration_days, return_percent FROM staking_campaigns WHERE id = $1`,
         [campaign_id]
       );
       if (!campRes.rows.length) {
         throw new Error('Campaign not found');
+      }
+
+      if (Number(campRes.rows[0].return_percent) !== 8) {
+        throw new Error('Only the fixed 8% monthly APY product is available');
       }
 
       const min = Number(campRes.rows[0].min_amount || 0);
@@ -162,7 +166,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(201).json(result);
   } catch (err: any) {
-    if (err.message === 'Campaign not found' || err.message.startsWith('Minimum stake')) {
+    if (
+      err.message === 'Campaign not found' ||
+      err.message.startsWith('Minimum stake') ||
+      err.message === 'Only the fixed 8% monthly APY product is available'
+    ) {
       return res.status(400).json({ error: err.message });
     }
     if (err.message === 'No USDT wallet' || err.message === 'Insufficient available balance') {

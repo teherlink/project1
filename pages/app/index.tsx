@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { useState } from 'react';
+import { requestJson } from '../../lib/client-api';
 
 export default function AppHome() {
   const [fullName, setFullName] = useState('');
@@ -10,62 +11,70 @@ export default function AppHome() {
   const [referralCode, setReferralCode] = useState('');
   const [token, setToken] = useState('');
   const [message, setMessage] = useState('');
+  const [messageKind, setMessageKind] = useState<'error' | 'success'>('error');
   const [stage, setStage] = useState<'signup' | 'verify'>('signup');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSignup(event: React.FormEvent) {
     event.preventDefault();
     setMessage('');
+    setMessageKind('error');
 
     if (password !== confirmPassword) {
       setMessage('Passwords do not match.');
       return;
     }
 
-    const response = await fetch('/api/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        full_name: fullName,
-        email,
-        username,
-        password,
-        referral_code: referralCode || undefined,
-      }),
-    });
+    setIsSubmitting(true);
+    try {
+      await requestJson('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name: fullName,
+          email,
+          username,
+          password,
+          referral_code: referralCode || undefined,
+        }),
+      });
 
-    const data = await response.json();
-    if ('error' in data) {
-      setMessage(data.error);
-      return;
+      setStage('verify');
+      setMessageKind('success');
+      setMessage('Signup successful. A verification email was sent to your inbox. Enter the token below to verify.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Unable to create your account. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setStage('verify');
-    setMessage('Signup successful. A verification email was sent to your inbox. Enter the token below to verify.');
   }
 
   async function handleVerify(event: React.FormEvent) {
     event.preventDefault();
     setMessage('');
 
-    const response = await fetch('/api/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token }),
-    });
+    setIsSubmitting(true);
+    try {
+      await requestJson('/api/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
 
-    const data = await response.json();
-    if ('error' in data) {
-      setMessage(data.error);
-      return;
+      setMessage('Email verified! You can now log in at the login page.');
+      setMessageKind('success');
+      setStage('signup');
+      setToken('');
+      setEmail('');
+      setUsername('');
+      setPassword('');
+      setConfirmPassword('');
+      setFullName('');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Unable to verify your email. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setMessage('Email verified! You can now log in at the login page.');
-    setStage('signup');
-    setToken('');
-    setEmail('');
-    setUsername('');
-    setPassword('');
-    setFullName('');
   }
 
   return (
@@ -158,11 +167,11 @@ export default function AppHome() {
                 </div>
               </label>
 
-              <button type="submit" className="btn btn-primary login-submit">
-                Create account
+              <button type="submit" className="btn btn-primary login-submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Creating account...' : 'Create account'}
               </button>
 
-              {message ? <p className="login-message">{message}</p> : null}
+              {message ? <p className={`login-message ${messageKind}`}>{message}</p> : null}
 
               <p className="login-footer">
                 Already signed up?{' '}
@@ -184,8 +193,8 @@ export default function AppHome() {
                 />
               </label>
 
-              <button type="submit" className="btn btn-primary login-submit">
-                Verify account
+              <button type="submit" className="btn btn-primary login-submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Verifying...' : 'Verify account'}
               </button>
 
               <button
@@ -197,7 +206,7 @@ export default function AppHome() {
                 Back to signup
               </button>
 
-              {message ? <p className="login-message">{message}</p> : null}
+              {message ? <p className={`login-message ${messageKind}`}>{message}</p> : null}
 
               <p className="login-footer">
                 Already signed up?{' '}

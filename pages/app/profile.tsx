@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import { FormEvent, useEffect, useRef, useState } from 'react';
+import { requestJson } from '../../lib/client-api';
 
 type WalletData = {
   id: number;
@@ -75,6 +76,8 @@ type UserStake = {
   remaining_lock_days: number;
 };
 
+const FIXED_APY_PERCENT = 8;
+
 export default function ProfilePage() {
   const [token, setToken] = useState('');
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -82,7 +85,6 @@ export default function ProfilePage() {
   const [stakes, setStakes] = useState<UserStake[]>([]);
   const [activePage, setActivePage] = useState<'dashboard' | 'staking' | 'wallet' | 'account' | 'referral'>('dashboard');
   const [message, setMessage] = useState('');
-  const [selectedApy, setSelectedApy] = useState<5 | 10 | 20 | 30>(10);
   const [stakePercent, setStakePercent] = useState(100);
   const [stakeLoadingId, setStakeLoadingId] = useState<number | null>(null);
   const [profileSaving, setProfileSaving] = useState(false);
@@ -128,33 +130,28 @@ export default function ProfilePage() {
 
   async function fetchProfile(authToken: string) {
     try {
-      const res = await fetch('/api/profile', {
+      const data = await requestJson<{ user?: ProfileData; profile?: ProfileData; campaigns?: StakingCampaign[]; stakes?: UserStake[] }>('/api/profile', {
         headers: { Authorization: `Bearer ${authToken}` },
       });
-      const data = await res.json();
-      if (res.ok) {
-        setProfile(data.user ?? data.profile ?? null);
-        setCampaigns(data.campaigns ?? []);
-        setStakes(data.stakes ?? []);
-      }
+      setProfile(data.user ?? data.profile ?? null);
+      setCampaigns(data.campaigns ?? []);
+      setStakes(data.stakes ?? []);
     } catch (error) {
       console.error(error);
-      setMessage('Unable to load profile.');
+      setMessage(error instanceof Error ? error.message : 'Unable to load your profile. Please refresh and try again.');
     }
   }
 
   async function fetchCampaigns(authToken: string) {
     try {
-      const res = await fetch('/api/profile', {
+      const data = await requestJson<{ campaigns?: StakingCampaign[]; stakes?: UserStake[] }>('/api/profile', {
         headers: { Authorization: `Bearer ${authToken}` },
       });
-      const data = await res.json();
-      if (res.ok) {
-        setCampaigns(data.campaigns ?? []);
-        setStakes(data.stakes ?? []);
-      }
+      setCampaigns(data.campaigns ?? []);
+      setStakes(data.stakes ?? []);
     } catch (error) {
       console.error(error);
+      setMessage(error instanceof Error ? error.message : 'Unable to refresh staking data.');
     }
   }
 
@@ -164,7 +161,7 @@ export default function ProfilePage() {
     setStakeLoadingId(campaignId);
 
     try {
-      const res = await fetch('/api/staking/stake', {
+      const data = await requestJson<{ message?: string }>('/api/staking/stake', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -172,15 +169,13 @@ export default function ProfilePage() {
         },
         body: JSON.stringify({ campaign_id: campaignId, amount }),
       });
-      const data = await res.json();
-      if (!res.ok) return setMessage(data.error || 'Stake failed.');
       setToast({ text: data.message || 'Stake submitted.', visible: true });
       setTimeout(() => setToast({ text: '', visible: false }), 2800);
       fetchProfile(token);
       fetchCampaigns(token);
     } catch (error) {
       console.error(error);
-      setMessage('Stake failed.');
+      setMessage(error instanceof Error ? error.message : 'Stake failed. Please try again.');
     } finally {
       setStakeLoadingId(null);
     }
@@ -190,7 +185,7 @@ export default function ProfilePage() {
     if (!token) return setMessage('Login required.');
     setStakeLoadingId(stakeId);
     try {
-      const res = await fetch('/api/staking/claim', {
+      const data = await requestJson<{ message?: string }>('/api/staking/claim', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -198,15 +193,13 @@ export default function ProfilePage() {
         },
         body: JSON.stringify({ stake_id: stakeId }),
       });
-      const data = await res.json();
-      if (!res.ok) return setMessage(data.error || 'Claim failed.');
       setToast({ text: data.message || 'Claim submitted.', visible: true });
       setTimeout(() => setToast({ text: '', visible: false }), 2800);
       fetchProfile(token);
       fetchCampaigns(token);
     } catch (error) {
       console.error(error);
-      setMessage('Claim failed.');
+      setMessage(error instanceof Error ? error.message : 'Claim failed. Please try again.');
     } finally {
       setStakeLoadingId(null);
     }
@@ -216,7 +209,7 @@ export default function ProfilePage() {
     if (!token) return setMessage('Login required.');
     setStakeLoadingId(stakeId);
     try {
-      const res = await fetch('/api/staking/unstake', {
+      const data = await requestJson<{ message?: string }>('/api/staking/unstake', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -224,15 +217,13 @@ export default function ProfilePage() {
         },
         body: JSON.stringify({ stake_id: stakeId }),
       });
-      const data = await res.json();
-      if (!res.ok) return setMessage(data.error || 'Unstake failed.');
       setToast({ text: data.message || 'Unstaked successfully.', visible: true });
       setTimeout(() => setToast({ text: '', visible: false }), 2800);
       fetchProfile(token);
       fetchCampaigns(token);
     } catch (error) {
       console.error(error);
-      setMessage('Unstake failed.');
+      setMessage(error instanceof Error ? error.message : 'Unstake failed. Please try again.');
     } finally {
       setStakeLoadingId(null);
     }
@@ -248,7 +239,7 @@ export default function ProfilePage() {
 
     setProfileSaving(true);
     try {
-      const res = await fetch('/api/profile', {
+      const data = await requestJson<{ user?: ProfileData; profile?: ProfileData; message?: string }>('/api/profile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -256,8 +247,6 @@ export default function ProfilePage() {
         },
         body: JSON.stringify({ full_name: trimmedName, username: trimmedUsername }),
       });
-      const data = await res.json();
-      if (!res.ok) return setMessage(data.error || 'Unable to update profile.');
       setProfile(data.user ?? data.profile ?? profile);
       setToast({ text: data.message || 'Profile updated.', visible: true });
       setTimeout(() => setToast({ text: '', visible: false }), 2800);
@@ -265,7 +254,7 @@ export default function ProfilePage() {
       setMessage('');
     } catch (error) {
       console.error(error);
-      setMessage('Unable to update profile.');
+      setMessage(error instanceof Error ? error.message : 'Unable to update profile. Please try again.');
     } finally {
       setProfileSaving(false);
     }
@@ -285,7 +274,7 @@ export default function ProfilePage() {
 
     setPasswordSaving(true);
     try {
-      const res = await fetch('/api/change-password', {
+      const data = await requestJson<{ message?: string }>('/api/change-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -293,8 +282,6 @@ export default function ProfilePage() {
         },
         body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
       });
-      const data = await res.json();
-      if (!res.ok) return setMessage(data.error || 'Unable to change password.');
       setToast({ text: data.message || 'Password updated.', visible: true });
       setTimeout(() => setToast({ text: '', visible: false }), 2800);
       setCurrentPassword('');
@@ -303,7 +290,7 @@ export default function ProfilePage() {
       setMessage('');
     } catch (error) {
       console.error(error);
-      setMessage('Unable to change password.');
+      setMessage(error instanceof Error ? error.message : 'Unable to change password. Please try again.');
     } finally {
       setPasswordSaving(false);
     }
@@ -324,7 +311,7 @@ export default function ProfilePage() {
 
     setWithdrawLoading(true);
     try {
-      const res = await fetch('/api/withdraw', {
+      const data = await requestJson<{ message?: string }>('/api/withdraw', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -332,9 +319,6 @@ export default function ProfilePage() {
         },
         body: JSON.stringify({ amount, withdrawal_address: normalizedAddress }),
       });
-      const data = await res.json();
-      if (!res.ok) return setMessage(data.error || 'Withdrawal failed.');
-
       setToast({ text: data.message || 'Withdrawal request created.', visible: true });
       setTimeout(() => setToast({ text: '', visible: false }), 2800);
       setWithdrawAmount('');
@@ -343,7 +327,7 @@ export default function ProfilePage() {
       await fetchProfile(token);
     } catch (error) {
       console.error(error);
-      setMessage('Withdrawal failed.');
+      setMessage(error instanceof Error ? error.message : 'Withdrawal failed. Please try again.');
     } finally {
       setWithdrawLoading(false);
     }
@@ -363,15 +347,7 @@ export default function ProfilePage() {
 
   const availableBalance = profile ? Number(profile.wallet.available_balance || 0) : 0;
   const computedStakeAmount = Number((availableBalance * (stakePercent / 100)).toFixed(6));
-  const nearestCampaign = (apy: number) => {
-    if (!campaigns.length) return null;
-    return campaigns.reduce((closest, campaign) => {
-      if (!closest) return campaign;
-      const diff = Math.abs(Number(campaign.return_percent) - apy);
-      const currentDiff = Math.abs(Number(closest.return_percent) - apy);
-      return diff < currentDiff ? campaign : closest;
-    }, campaigns[0]);
-  };
+  const fixedApyCampaign = campaigns.find((campaign) => Number(campaign.return_percent) === FIXED_APY_PERCENT);
 
   const displayedAddress = profile?.wallet_address || profile?.assigned_wallet_address || '';
   const truncatedAddress = displayedAddress ? `${displayedAddress.slice(0, 6)}...${displayedAddress.slice(-4)}` : 'No wallet';
@@ -453,7 +429,7 @@ export default function ProfilePage() {
           </div>
         </header>
         <div className="profile-content">
-          {message ? <div className="alert-message">{message}</div> : null}
+          {message ? <div className="alert-message" role="alert">{message}</div> : null}
 
           {activePage === 'dashboard' && (
             <section>
@@ -527,7 +503,7 @@ export default function ProfilePage() {
           {activePage === 'staking' && (
             <section>
               <h1 style={{ margin: 0, fontSize: 28, fontWeight: 600, letterSpacing: '-0.5px' }}>Staking</h1>
-              <p style={{ margin: '8px 0 24px', color: '#4b5563' }}>Choose your APY and stake a percentage of your available balance.</p>
+              <p style={{ margin: '8px 0 24px', color: '#4b5563' }}>Stake a percentage of your available balance at a fixed 8% monthly APY.</p>
               <div style={{ display: 'grid', gap: 20 }}>
                 <div style={{ background: '#f8fafc', border: '1px solid #e5e7eb', borderRadius: 20, padding: 24, display: 'grid', gap: 20 }}>
                   <div style={{ display: 'grid', gap: 18 }}>
@@ -535,34 +511,15 @@ export default function ProfilePage() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
                         <div>
                           <h3 style={{ margin: '0 0 4px', fontSize: 20, fontWeight: 700 }}>Stake calculator</h3>
-                          <div style={{ color: '#6b7280', fontSize: 14 }}>Select APY and set the stake amount as a percentage of available funds.</div>
+                          <div style={{ color: '#6b7280', fontSize: 14 }}>Set the stake amount as a percentage of available funds.</div>
                         </div>
-                        <div style={{ fontWeight: 700, fontSize: 20, color: '#111827' }}>{selectedApy}% APY</div>
+                        <div style={{ fontWeight: 700, fontSize: 20, color: '#111827' }}>Fixed {FIXED_APY_PERCENT}% monthly APY</div>
                       </div>
 
-                      <div style={{ display: 'grid', gap: 10, background: '#ffffff', border: '1px solid #d1d5db', borderRadius: 16, padding: 16 }}>
-                        <div style={{ color: '#6b7280', fontSize: 12, textTransform: 'uppercase', letterSpacing: '1px' }}>APY options</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 10 }}>
-                          {[5, 10, 20, 30].map((apy) => (
-                            <button
-                              key={apy}
-                              onClick={() => setSelectedApy(apy as 5 | 10 | 20 | 30)}
-                              style={{
-                                minHeight: 50,
-                                borderRadius: 14,
-                                border: '1px solid',
-                                borderColor: selectedApy === apy ? '#0ea5a4' : '#d1d5db',
-                                background: selectedApy === apy ? '#0ea5a4' : '#ffffff',
-                                color: selectedApy === apy ? '#ffffff' : '#111827',
-                                fontSize: 16,
-                                fontWeight: 700,
-                                cursor: 'pointer',
-                              }}
-                            >
-                              {apy}%
-                            </button>
-                          ))}
-                        </div>
+                      <div style={{ display: 'grid', gap: 8, background: '#ecfdf5', border: '1px solid #99f6e4', borderRadius: 16, padding: 16 }}>
+                        <div style={{ color: '#0f766e', fontSize: 12, textTransform: 'uppercase', letterSpacing: '1px' }}>Fixed APY product</div>
+                        <div style={{ color: '#111827', fontSize: 18, fontWeight: 700 }}>8% monthly APY</div>
+                        <div style={{ color: '#4b5563', fontSize: 13 }}>Your monthly reward is calculated from the amount you stake.</div>
                       </div>
                     </div>
 
@@ -600,13 +557,13 @@ export default function ProfilePage() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
                           <div>
                             <div style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>Stake now</div>
-                            <div style={{ fontSize: 12, color: '#6b7280' }}>Nearest campaign is selected based on your APY choice.</div>
+                            <div style={{ fontSize: 12, color: '#6b7280' }}>Your stake will use the fixed 8% monthly APY product.</div>
                           </div>
                           <button
                             onClick={() => {
-                              const selectedCampaign = nearestCampaign(selectedApy);
+                              const selectedCampaign = fixedApyCampaign;
                               if (!selectedCampaign) {
-                                return setMessage('No campaign available for selected APY.');
+                                return setMessage('The fixed 8% monthly APY product is currently unavailable.');
                               }
                               if (!computedStakeAmount || computedStakeAmount <= 0) {
                                 return setMessage('Enter a stake amount.');
@@ -631,7 +588,7 @@ export default function ProfilePage() {
                             Stake now
                           </button>
                         </div>
-                        <div style={{ color: '#6b7280', fontSize: 12 }}>If exact APY is unavailable, the nearest campaign will be chosen.</div>
+                        <div style={{ color: '#6b7280', fontSize: 12 }}>Rewards are paid according to the product terms and a 30-day month calculation.</div>
                       </div>
                     )}
                   </div>

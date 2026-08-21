@@ -162,6 +162,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const campaignsRes = await query(
       `SELECT id, name, return_percent, risk_level, min_amount
        FROM staking_campaigns
+       WHERE is_active = true
+       ORDER BY return_percent`,
+      []
+    );
+
+    const allCampaignsRes = await query(
+      `SELECT id, name, return_percent, risk_level, min_amount
+       FROM staking_campaigns
        ORDER BY return_percent`,
       []
     );
@@ -182,8 +190,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const stakedBalance = currentBalances.staked_balance;
     const totalBalance = availableBalance + lockedBalance + stakedBalance;
     const campaigns = campaignsRes.rows;
+    const allCampaigns = allCampaignsRes.rows;
     const stakes = stakesRes.rows.map((s: any) => {
-      const camp = campaigns.find((c: any) => c.id === s.campaign_id) || { return_percent: 0 };
+      const camp = allCampaigns.find((c: any) => c.id === s.campaign_id) || { return_percent: 0 };
       const preview = getStakeRewardPreview({
         amount: s.amount,
         startedAt: s.started_at,

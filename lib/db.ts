@@ -261,6 +261,7 @@ export async function initDb() {
       risk_level text NOT NULL,
       min_amount numeric NOT NULL DEFAULT 0,
       duration_days integer NOT NULL DEFAULT 30,
+      is_active boolean NOT NULL DEFAULT true,
       created_at timestamptz NOT NULL DEFAULT now()
     );
 

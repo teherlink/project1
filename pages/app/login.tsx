@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { requestJson } from '../../lib/client-api';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -24,25 +26,26 @@ export default function LoginPage() {
     event.preventDefault();
     setMessage('');
 
-    const response = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+    setIsSubmitting(true);
+    try {
+      const data = await requestJson<{ token?: string }>('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
-    if ('error' in data) {
-      setMessage(data.error);
-      return;
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
+        window.location.href = '/app/profile';
+        return;
+      }
+
+      setMessage('Login could not be completed. Please try again.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Unable to log in. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    if (data.token) {
-      localStorage.setItem('authToken', data.token);
-      window.location.href = '/app/profile';
-      return;
-    }
-
-    setMessage('Login successful. Token received.');
   }
 
   return (
@@ -92,11 +95,11 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <button type="submit" className="btn btn-primary login-submit">
-              Log in
+            <button type="submit" className="btn btn-primary login-submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Logging in...' : 'Log in'}
             </button>
 
-            {message ? <p className="login-message">{message}</p> : null}
+            {message ? <p className="login-message error" role="alert">{message}</p> : null}
           </form>
 
           <p className="login-footer">

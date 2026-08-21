@@ -12,11 +12,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     await initDb();
-    const camps = await query(`SELECT id, name, return_percent, risk_level, min_amount FROM staking_campaigns ORDER BY return_percent`);
+    const camps = await query(`SELECT id, name, return_percent, risk_level, min_amount FROM staking_campaigns WHERE is_active = true ORDER BY return_percent`);
+    const allCamps = await query(`SELECT id, name, return_percent, risk_level, min_amount FROM staking_campaigns ORDER BY return_percent`);
     const stakesRes = await query(`SELECT id, campaign_id, amount, started_at, status, withdrawn_at, payout_amount, last_claimed_at, claimed_amount, lock_until FROM user_stakes WHERE user_id = $1 ORDER BY started_at DESC`, [payload.userId]);
     const campaigns = camps.rows;
+    const allCampaigns = allCamps.rows;
     const stakes = stakesRes.rows.map((s: any) => {
-      const camp = campaigns.find((c: any) => c.id === s.campaign_id) || { return_percent: 0 };
+      const camp = allCampaigns.find((c: any) => c.id === s.campaign_id) || { return_percent: 0 };
       const preview = getStakeRewardPreview({
         amount: s.amount,
         startedAt: s.started_at,

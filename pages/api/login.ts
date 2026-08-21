@@ -8,6 +8,7 @@ import {
   sanitizeText,
   validateEmail,
   validatePassword,
+  validateUsername,
 } from '../../lib/security';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -29,19 +30,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(429).json({ error: 'Too many requests' });
   }
 
-  const email = sanitizeText(req.body?.email, 254);
+  const identifier = sanitizeText(req.body?.email, 254);
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
 
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password are required' });
+  if (!identifier || !password) {
+    return res.status(400).json({ error: 'Email or username and password are required' });
   }
 
-  if (!validateEmail(email) || !validatePassword(password)) {
-    return res.status(400).json({ error: 'Invalid email or password format' });
+  if ((!validateEmail(identifier) && !validateUsername(identifier)) || !validatePassword(password)) {
+    return res.status(400).json({ error: 'Enter a valid email or username and password' });
   }
 
   try {
-    const result = await query(`SELECT id, password_hash, email_verified FROM users WHERE email = $1`, [email.toLowerCase()]);
+    const result = await query(
+      `SELECT id, email, password_hash, email_verified
+       FROM users
+       WHERE LOWER(email) = LOWER($1) OR LOWER(username) = LOWER($1)`,
+      [identifier]
+    );
     if (!result.rows.length) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -54,7 +60,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(403).json({ error: 'Email not verified' });
     }
 
-    const token = createJwt({ userId: user.id, email: email.toLowerCase() });
+    const token = createJwt({ userId: user.id, email: user.email.toLowerCase() });
     return res.status(200).json({ message: 'Login successful', token });
   } catch (error) {
     console.error(error);
